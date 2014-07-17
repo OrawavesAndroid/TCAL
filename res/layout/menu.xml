@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white" >
+
+    
+    <LinearLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_marginTop="40dp"
+    android:background="@android:color/white" >
+    
+    <Button
+        android:id="@+id/btnTextShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/orance"
+        android:layout_margin="10dp"
+        android:textStyle="bold"
+        android:text="Text Share" />
+    <Button
+        android:id="@+id/bntImageShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_margin="10dp"
+        android:textColor="#0AA715"
+        android:textStyle="bold"
+        android:text="Image Share" />
+    <Button
+        android:id="@+id/btnAudioShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#2E9AFE"
+        android:textStyle="bold"
+        android:layout_margin="10dp"
+        android:text="Audio Share" />
+    <Button
+        android:id="@+id/btnLocationShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#F5A9A9"
+        android:textStyle="bold"
+        android:layout_margin="10dp"
+        android:text="Location Share" />
+    
+    <Button
+        android:id="@+id/btnTimeLines"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_margin="10dp"
+        android:text="MY TL" />
+    
+    </LinearLayout>
+
+</LinearLayout>
