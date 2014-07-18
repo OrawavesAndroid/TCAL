@@ -159,12 +159,15 @@ public class ImageActivity extends Activity implements OnClickListener {
 			
 			
 			if (!btnSelectDateTime.getText().toString().trim().equalsIgnoreCase("Select date and time")) {
-
+				
+				if (!imgFilePath.equalsIgnoreCase("")) {
+				
+				
 				//Click on submit button
 				//Preparing the DTO
 				TimelineDTO timeDto = new TimelineDTO();
 				timeDto.setCtype("image");
-				timeDto.setContent(edtTextToShare.getText().toString().trim());
+				timeDto.setContent(edtTextToShare.getText().toString().trim() + "~"+imgFilePath);
 				timeDto.setDateAndTime(btnSelectDateTime.getText().toString().trim());
 
 				if (mfb_share == true) {
@@ -196,11 +199,17 @@ public class ImageActivity extends Activity implements OnClickListener {
 					Toast.makeText(getApplicationContext(), "Timeline added sucessfully", Toast.LENGTH_LONG).show();
 					resetValues();
 				}
-
+				 
+				}
+				else
+				{
+					Toast.makeText(getApplicationContext(), "Please select Image to share", Toast.LENGTH_LONG).show();
+				}
 			}else
 			{
 				Toast.makeText(getApplicationContext(), "Please select the data and time", Toast.LENGTH_LONG).show();
 			}
+				
 
 			break;
 			
@@ -386,7 +395,7 @@ public class ImageActivity extends Activity implements OnClickListener {
 				imgFilePath = getRealPathFromURI(selectedImage);
 				System.out.println("Gallarry Image path =" + imgFilePath);
 				try {
-					edtTextToShare.setText(imgFilePath);
+					//edtTextToShare.setText(imgFilePath);
 					//image.setImageBitmap(decodeUri(selectedImage));
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -417,7 +426,7 @@ public class ImageActivity extends Activity implements OnClickListener {
 					ByteArrayOutputStream stream = new ByteArrayOutputStream();
 					photo.compress(CompressFormat.JPEG, 0, stream);
 					imgFilePath = mypath.getAbsolutePath();
-					edtTextToShare.setText(imgFilePath);
+					//edtTextToShare.setText(imgFilePath);
 					System.out.println("capture image  ===" + mypath);				
 					//Log.i("Complaint", imageArray.toString());
 					mFileOutStream.flush();

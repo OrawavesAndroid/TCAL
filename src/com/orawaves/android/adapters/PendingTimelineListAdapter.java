@@ -2,6 +2,7 @@ package com.orawaves.android.adapters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
@@ -27,8 +28,8 @@ import com.orawaves.tcal.R;
 import com.orawaves.tcal.andorid.dto.DTO;
 import com.orawaves.tcal.andorid.dto.TimelineDTO;
 import com.orawaves.tcal.andorid.socialnetwork.FacebookPost;
-import com.orawaves.tcal.andorid.socialnetwork.TwitterPost;
 import com.orawaves.tcal.andorid.socialnetwork.FacebookPost.FbCallBack;
+import com.orawaves.tcal.andorid.socialnetwork.TwitterPost;
 import com.orawaves.tcal.android.dao.TimelineDAO;
 import com.orawaves.tcal.android.database.DBHandler;
 import com.twitter.android.Twitt_Sharing.TwitterCallback;
@@ -155,15 +156,15 @@ public class PendingTimelineListAdapter extends BaseAdapter
 				}
 				if (dto.getCtype().equalsIgnoreCase("image")) {
 					try {
+						
+						String[] content = dto.getContent().split("~");
 						if (dto.getmShare().contains("f")) {
-							shareContent = dto.getContent();
+							shareContent = content[0];
 						}
-						Bundle bundle = new Bundle();				
 						//bundle.putString("message", shareContent.replaceAll("\\&", "%26") );
-						File imageFile = new File(shareContent);
+						File imageFile = new File(content[1]);
 
 						//	byte[] data = null;
-						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						Bitmap bi = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 						new FacebookPost(context, new FbCallBack() {
 
@@ -209,12 +210,14 @@ public class PendingTimelineListAdapter extends BaseAdapter
 
 				}
 
-				if (dto.getCtype().equalsIgnoreCase("image") || dto.getCtype().equalsIgnoreCase("location")) {
+				if (dto.getCtype().equalsIgnoreCase("image") ) {
+					
+					String[] content = dto.getContent().split("~");
 
 					if (dto.getmShare().contains("t")) {
-						shareContent = dto.getContent();
+						shareContent = content[0];
 					}
-					new TwitterPost().Post(context,"" ,new File(shareContent),null, new TwitterCallback() {
+					new TwitterPost().Post(context,"" ,new File(content[1]),null, new TwitterCallback() {
 
 						@Override
 						public void twitterCall() {
@@ -234,6 +237,10 @@ public class PendingTimelineListAdapter extends BaseAdapter
 			public void onClick(View v) {
 
 				if (dto.getmShare().contains("e")) {
+					
+					
+					if (dto.getCtype().equalsIgnoreCase("text") || dto.getCtype().equalsIgnoreCase("location")) {
+					
 					shareContent = dto.getContent();
 
 					Intent send = new Intent(Intent.ACTION_SENDTO);
@@ -245,6 +252,19 @@ public class PendingTimelineListAdapter extends BaseAdapter
 					send.setData(uri);
 					context.startActivity(Intent.createChooser(send, "Send mail..."));
 					em.setVisibility(View.INVISIBLE);
+					}
+					
+					if (dto.getCtype().equalsIgnoreCase("image") ) {
+						
+						List<String> fileList = new ArrayList<String>();
+						
+						String[] content = dto.getContent().split("~");
+						
+						fileList.add(content[1]);
+						
+						email(context,dto.getmShareEmail(),"","TimeLine message",content[0],fileList);
+						em.setVisibility(View.INVISIBLE);
+					}
 				}
 
 			}
@@ -252,6 +272,31 @@ public class PendingTimelineListAdapter extends BaseAdapter
 
 		return convertView;
 	}
+	
+	public static void email(Context context, String emailTo, String emailCC,
+		    String subject, String emailText, List<String> filePaths)
+		{
+		    //need to "send multiple" to get more than one attachment
+		    final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
+		    emailIntent.setType("text/plain");
+		    emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, 
+		        new String[]{emailTo});
+		    emailIntent.putExtra(android.content.Intent.EXTRA_CC, 
+		        new String[]{emailCC});
+		    emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject); 
+		    emailIntent.putExtra(Intent.EXTRA_TEXT, emailText);
+		    //has to be an ArrayList
+		    ArrayList<Uri> uris = new ArrayList<Uri>();
+		    //convert from paths to Android friendly Parcelable Uri's
+		    for (String file : filePaths)
+		    {
+		        File fileIn = new File(file);
+		        Uri u = Uri.fromFile(fileIn);
+		        uris.add(u);
+		    }
+		    emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+		    context.startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+		}
 
 	private void updateGUI(final int position)
 	{
