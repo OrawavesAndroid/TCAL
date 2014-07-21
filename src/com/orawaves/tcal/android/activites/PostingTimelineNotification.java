@@ -5,12 +5,14 @@ import java.util.List;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
+import com.facebook.Session;
 import com.orawaves.android.adapters.PendingTimelineListAdapter;
 import com.orawaves.tcal.R;
 import com.orawaves.tcal.andorid.dto.DTO;
@@ -77,4 +79,12 @@ public class PostingTimelineNotification extends Activity implements OnItemClick
 	    .setIcon(android.R.drawable.ic_dialog_alert)
 	   .show(); */
 	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    super.onActivityResult(requestCode, resultCode, data);
+	   Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
+
+	}
+
 }

@@ -4,7 +4,8 @@
     <string name="app_name">TCAL</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-   <string name="app_id">158082417629868</string> 
+    <string name="app_id">1512982002254260</string> 
+ <!--  <string name="app_id">158082417629868</string> -->
     <string name="external_dir">timeline</string>
-    <!-- <string name="app_id">295667803888220</string> -->
+    <!-- <string name="app_id">295667803888220</string>  -->
 </resources> 

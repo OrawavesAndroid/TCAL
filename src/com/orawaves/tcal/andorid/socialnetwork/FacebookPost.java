@@ -5,6 +5,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.view.Gravity;
+import android.widget.Toast;
 
 import com.facebook.Request;
 import com.facebook.Response;
@@ -30,9 +33,7 @@ public class FacebookPost {
 	        if(session!=null && session.isOpened() && !session.isClosed()){
 	        	postImageIntoFacebook(session,bitmap);
 	        }else{
-	        	
-	        	FbAuthentionActivity.fbAuthCallback= new FBAuthCallback() {
-	        		
+	          	FbAuthentionActivity.fbAuthCallback= new FBAuthCallback() {
 	        		@Override
 	        		public void authCompleted(Session session) {
 	        			if(session.isOpened()){
@@ -46,7 +47,26 @@ public class FacebookPost {
 	        }
 	}
 	
-
+	
+   public void postImageWithCaption(final String caption, final Bitmap bitmap )
+   {
+	   Session session = Session.getActiveSession();
+       if(session!=null && session.isOpened() && !session.isClosed()){ 
+    	   postImageCaption(session, caption, bitmap);
+       }else{
+         	FbAuthentionActivity.fbAuthCallback= new FBAuthCallback() {
+       		@Override
+       		public void authCompleted(Session session) {
+       			if(session.isOpened()){
+       			   postImageCaption(session, caption, bitmap); 
+       			}
+       		}
+       	};
+       	
+       	context.startActivity(new Intent(context,FbAuthentionActivity.class));
+       	
+       }
+   }
 	
 	public void post(final String msg )
 	{
@@ -110,6 +130,23 @@ public class FacebookPost {
 				}).executeAsync();
 	    }
 
+	 private void postImageCaption(Session session,String caption,Bitmap bitmap)
+	 {
+		  Request request = Request.newUploadPhotoRequest(session, bitmap, new Request.Callback() {
+              
+              @Override
+              public void onCompleted(Response response) {
+                  callBack.callback();
+                  Toast toast=Toast.makeText(context.getApplicationContext(), "posted successfully on your facebook wall.", Toast.LENGTH_LONG);
+                  toast.setGravity(Gravity.CENTER, 0, 0);
+                  toast.show();
+              }
+          });
+            Bundle params = request.getParameters();
+            params.putString("message", caption);
+            request.setParameters(params);
+            request.executeAsync();
+	 }
 	 
 	 public interface FbCallBack{
 		 

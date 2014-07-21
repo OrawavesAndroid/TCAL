@@ -1,6 +1,5 @@
 package com.orawaves.android.adapters;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +53,6 @@ public class PendingTimelineListAdapter extends BaseAdapter
 	public int getCount()
 	{
 		return dataList.size();
-
 	}
 
 	@Override
@@ -121,7 +119,7 @@ public class PendingTimelineListAdapter extends BaseAdapter
 			@Override
 			public void onClick(View v) { 
 
-				Toast.makeText(context, "Delete", 10).show();
+				//Toast.makeText(context, "Delete", 10).show();
 
 				updateGUI(position);
 			}
@@ -137,6 +135,10 @@ public class PendingTimelineListAdapter extends BaseAdapter
 					if (dto.getmShare().contains("f")) {
 						shareContent = dto.getContent();
 					}
+					 if(dto.getCtype().equalsIgnoreCase("location"))
+						{
+								shareContent = "http://maps.google.com/?q="+dto.getContent();
+						}
 					Bundle bundle = new Bundle();				
 					bundle.putString("message", shareContent.replaceAll("\\&", "%26") );
 
@@ -149,8 +151,9 @@ public class PendingTimelineListAdapter extends BaseAdapter
 							toast.setGravity(Gravity.CENTER, 0, 0);
 							toast.show();
 
-							updateGUI(position); 
+							//updateGUI(position); 
 							fb.setVisibility(View.INVISIBLE);
+							updateShareInfo(position,"f");
 						}
 					}).post(shareContent.replaceAll("\\&", "%26"));
 				}
@@ -163,9 +166,9 @@ public class PendingTimelineListAdapter extends BaseAdapter
 						}
 						//bundle.putString("message", shareContent.replaceAll("\\&", "%26") );
 						File imageFile = new File(content[1]);
-
-						//	byte[] data = null;
-						Bitmap bi = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+ 
+						Bitmap bi =	decodeScaledBitmapFromSdCard(imageFile.getAbsolutePath(),200,200);
+					//	Bitmap bi = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 						new FacebookPost(context, new FbCallBack() {
 
 							@Override
@@ -175,10 +178,11 @@ public class PendingTimelineListAdapter extends BaseAdapter
 								toast.setGravity(Gravity.CENTER, 0, 0);
 								toast.show();
 
-								updateGUI(position); 
+							//	updateGUI(position); 
 								fb.setVisibility(View.INVISIBLE);
+								updateShareInfo(position,"f");
 							}
-						}).post(bi);
+						}).postImageWithCaption(shareContent,bi);
 
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -199,15 +203,21 @@ public class PendingTimelineListAdapter extends BaseAdapter
 					if (dto.getmShare().contains("t")) {
 						shareContent = dto.getContent();
 					}
+					 if(dto.getCtype().equalsIgnoreCase("location"))
+					{
+							shareContent = "http://maps.google.com/?q="+dto.getContent();
+					}
+					
 					new TwitterPost().Post(context, shareContent, new TwitterCallback() {
 
 						@Override
 						public void twitterCall() {
 							Toast.makeText(context, "Twitted post sucessfully", Toast.LENGTH_LONG).show();
 							tw.setVisibility(View.INVISIBLE);
+							updateShareInfo(position,"t");
 						}
 					});
-
+					
 				}
 
 				if (dto.getCtype().equalsIgnoreCase("image") ) {
@@ -217,12 +227,12 @@ public class PendingTimelineListAdapter extends BaseAdapter
 					if (dto.getmShare().contains("t")) {
 						shareContent = content[0];
 					}
-					new TwitterPost().Post(context,"" ,new File(content[1]),null, new TwitterCallback() {
-
+					new TwitterPost().Post(context,shareContent ,new File(content[1]),null, new TwitterCallback() {
 						@Override
 						public void twitterCall() {
 							Toast.makeText(context, "Twitted post sucessfully", Toast.LENGTH_LONG).show();
 							tw.setVisibility(View.INVISIBLE);
+							updateShareInfo(position,"t");
 						}
 					});
 				}
@@ -242,16 +252,21 @@ public class PendingTimelineListAdapter extends BaseAdapter
 					if (dto.getCtype().equalsIgnoreCase("text") || dto.getCtype().equalsIgnoreCase("location")) {
 					
 					shareContent = dto.getContent();
+					if(dto.getCtype().equalsIgnoreCase("location"))
+					{
+								shareContent = "http://maps.google.com/?q="+dto.getContent();
+					}
 
 					Intent send = new Intent(Intent.ACTION_SENDTO);
 					String uriText = "mailto:" + Uri.encode(dto.getmShareEmail()) + 
 							"?subject=" + Uri.encode("Timeline message") + 
-							"&body=" + Uri.encode(dto.getContent());
+							"&body=" + Uri.encode(shareContent);
 					Uri uri = Uri.parse(uriText);
 
 					send.setData(uri);
 					context.startActivity(Intent.createChooser(send, "Send mail..."));
 					em.setVisibility(View.INVISIBLE);
+					updateShareInfo(position,"e");
 					}
 					
 					if (dto.getCtype().equalsIgnoreCase("image") ) {
@@ -264,6 +279,7 @@ public class PendingTimelineListAdapter extends BaseAdapter
 						
 						email(context,dto.getmShareEmail(),"","TimeLine message",content[0],fileList);
 						em.setVisibility(View.INVISIBLE);
+						updateShareInfo(position,"e");
 					}
 				}
 
@@ -309,7 +325,6 @@ public class PendingTimelineListAdapter extends BaseAdapter
 
 				boolean isDele = TimelineDAO.getInstance().delete(tdto, DBHandler.getInstance(context).getWritableDatabase());
 				if (isDele) {
-
 					Toast.makeText(context, "Timeline deleted sucessfully", Toast.LENGTH_LONG).show();
 					dataList.remove(position);
 					notifyDataSetChanged();
@@ -325,4 +340,71 @@ public class PendingTimelineListAdapter extends BaseAdapter
 		.setIcon(android.R.drawable.ic_dialog_alert)
 		.show(); 
 	}
+	
+	private void updateShareInfo(final int position,String remove)
+	{
+		final TimelineDTO tdto = (TimelineDTO)dataList.get(position); 
+		tdto.setmShare(tdto.getmShare().replace(remove, ""));
+		new AlertDialog.Builder(context)
+		.setTitle("Delete Timeline")
+		.setMessage(tdto.getContent())
+		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				
+				boolean isUpdate    = TimelineDAO.getInstance().update(tdto,  DBHandler.getInstance(context).getWritableDatabase());
+				 
+				if (isUpdate) {
+					dataList.add(position, tdto);
+					notifyDataSetChanged();
+				}
+				dialog.dismiss();
+			}
+		})
+		.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) { 
+				dialog.dismiss();
+			}
+		})
+		.setIcon(android.R.drawable.ic_dialog_alert)
+		.show(); 
+	}
+	
+	public static Bitmap decodeScaledBitmapFromSdCard(String filePath,
+	        int reqWidth, int reqHeight) {
+
+	    // First decode with inJustDecodeBounds=true to check dimensions
+	    final BitmapFactory.Options options = new BitmapFactory.Options();
+	    options.inJustDecodeBounds = true;
+	    BitmapFactory.decodeFile(filePath, options);
+
+	    // Calculate inSampleSize
+	    options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+	    // Decode bitmap with inSampleSize set
+	    options.inJustDecodeBounds = false;
+	    return BitmapFactory.decodeFile(filePath, options);
+	}
+
+	public static int calculateInSampleSize(
+	        BitmapFactory.Options options, int reqWidth, int reqHeight) {
+	    // Raw height and width of image
+	    final int height = options.outHeight;
+	    final int width = options.outWidth;
+	    int inSampleSize = 1;
+
+	    if (height > reqHeight || width > reqWidth) {
+
+	        // Calculate ratios of height and width to requested height and width
+	        final int heightRatio = Math.round((float) height / (float) reqHeight);
+	        final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+	        // Choose the smallest ratio as inSampleSize value, this will guarantee
+	        // a final image with both dimensions larger than or equal to the
+	        // requested height and width.
+	        inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+	    }
+
+	    return inSampleSize;
+	}
+	
 }

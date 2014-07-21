@@ -120,7 +120,4 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
 
         return resultList;
     }
-  
-
-    
 }
